@@ -1,6 +1,8 @@
 import {Column, Entity, PrimaryGeneratedColumn, OneToMany, ManyToOne} from 'typeorm';
 import {Message} from '../messages/message.entity';
 
+export type Role = 'user' | 'admin';
+
 
 @Entity()
 export class User {
@@ -10,23 +12,49 @@ export class User {
     @Column({nullable: true})
     password?: string
 
-    @Column({unique: true})
+    @Column({unique: true, nullable: false})
     email: string
+
+    @Column({nullable: true})
+    password_reset_token?: string
+
+    @Column({type: 'timestamp', nullable: true})
+    password_reset_expires?: string
 
     @Column({default: false})
     is_email_verified: boolean;
 
     @Column({nullable: true})
-    google?: string;
+    profile_image?: string
 
-    @Column({type: 'varchar', enum: ['user', 'admin'], default: 'user'})
-    role: string;
+    @Column({nullable: true})
+    name?: string
+
+    @Column({length: 10, nullable: true})
+    gender?: string
+
+    @Column({nullable: true})
+    google_id?: string
+
+    @Column({type: 'varchar', default: 'user'})
+    role: Role;
 
     @OneToMany(() => UserToken, token => token.user)
     tokens: UserToken[];
 
-    @OneToMany(() => Message, (message) => message.user, {eager: false})
+    @OneToMany(() => Message, (message) => message.user)
     messages: Message[]
+
+    toJSON() {
+        const user = this;
+        delete user.password;
+        //@ts-ignore
+        delete user.tokens;
+        delete user.password_reset_expires;
+        delete user.password_reset_token;
+        return user;
+    }
+
 }
 
 
