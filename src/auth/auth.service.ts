@@ -1,6 +1,8 @@
 import { randomBytes, scrypt, timingSafeEqual } from "crypto";
-import { Injectable, BadRequestException, UnauthorizedException} from "@nestjs/common";
+import { Injectable, BadRequestException, UnauthorizedException } from "@nestjs/common";
 import { JwtService, JwtSignOptions } from "@nestjs/jwt";
+import { Response } from "express";
+import { CookieSerializeOptions, serialize } from 'cookie';
 import { UserService } from "src/users/user.service";
 import { User } from "src/users/user.entity";
 
@@ -10,12 +12,12 @@ export class AuthService {
 
     public async login(email: string, password: string) {
         const user = await this.userService.findByEmail(email);
-        if(!user) {
+        if (!user) {
             throw new UnauthorizedException('Email do not exist');
         }
 
         const isValid = await this.validatePassword(password, user.password);
-        if(!isValid) {
+        if (!isValid) {
             throw new UnauthorizedException('Email or password is incorrect');
         }
 
@@ -32,7 +34,7 @@ export class AuthService {
         return user;
     }
 
-    private hashPassword(password: string, saltLength: number = 16): Promise<string> {
+    public hashPassword(password: string, saltLength: number = 16): Promise<string> {
         return new Promise((res, rej) => {
             const salt = randomBytes(saltLength).toString('hex');
             scrypt(password, salt, 64, (err, hash) => {
@@ -42,7 +44,7 @@ export class AuthService {
         })
     }
 
-    private validatePassword(newPassword, hashedPassword): Promise<boolean> {
+    public validatePassword(newPassword, hashedPassword): Promise<boolean> {
         return new Promise((res, rej) => {
             const [salt, hash] = hashedPassword.split(':');
             scrypt(newPassword, salt, 64, (err, newHash) => {
@@ -54,7 +56,7 @@ export class AuthService {
     }
 
     public async generateToken(user: User, options: JwtSignOptions = {}) {
-        const token = await this.jwtService.signAsync({id: user.id}, {
+        const token = await this.jwtService.signAsync({ id: user.id }, {
             expiresIn: '24h',
             ...options
         })
@@ -68,6 +70,17 @@ export class AuthService {
         })
 
         return data;
+    }
+
+    public setJwtCookie(res: Response, value: string, options: CookieSerializeOptions = {}) {
+        // Cookie should last for 7 days
+        res.setHeader('Set-Cookie', serialize('x-auth-token', value, {
+            httpOnly: true,
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            sameSite: 'strict',
+            path: '/',
+            ...options
+        }))
     }
 
 }
