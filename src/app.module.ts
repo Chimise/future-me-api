@@ -1,11 +1,13 @@
-import { Module } from '@nestjs/common';
+import { Module} from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './users/user.module';
 import { MessageModule } from './messages/message.module';
+import { AuthModule } from './auth/auth.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { validate, loader} from './common/config';
+import { AccountModule } from './account/account.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -29,8 +31,8 @@ import { validate, loader} from './common/config';
         database: configService.get('db.database')
       }
     }
-  }), UserModule, MessageModule],
+  }), UserModule, MessageModule, AuthModule, AccountModule],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule{ }
