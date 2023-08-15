@@ -5,10 +5,17 @@ export enum Environment {
 }
 
 export interface Config {
+    isProd: boolean,
     env: Environment;
-    port: number;
+    port?: number;
     db: Database;
     jwt: string;
+    google?: Google
+}
+
+export interface Google {
+    clientId: string;
+    secret: string;
 }
 
 interface Database {

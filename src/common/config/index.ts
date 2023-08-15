@@ -1,7 +1,7 @@
 import { IsEnum, IsNumber, IsInt, IsString, validateSync } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
-import { Environment} from '../interfaces/index.interface';
-export {Config} from '../interfaces/index.interface'
+import { Environment, Google} from '../interfaces/index.interface';
+export {Config, Google} from '../interfaces/index.interface'
 
 
 
@@ -11,7 +11,7 @@ class EnvironmentVariables {
     readonly NODE_ENV: Environment = Environment.Development;
 
     @IsInt()
-    readonly PORT: number = 5000;
+    readonly PORT?: number;
 
     @IsNumber()
     DB_PORT: number
@@ -30,6 +30,15 @@ class EnvironmentVariables {
 
     @IsString()
     JWT_TOKEN: string
+
+    @IsString()
+    SESSION_SECRET: string
+
+    @IsString()
+    GOOGLE_CLIENT_ID?: string
+
+    @IsString()
+    GOOGLE_CLIENT_SECRET?: string;
 }
 
 
@@ -47,7 +56,15 @@ export const validate = (config: Record<string, unknown>) => {
 
 
 export const loader = () => {
+    let google: Google = {} as Google;
+    if(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+        google.clientId = process.env.GOOGLE_CLIENT_ID;
+        google.secret = process.env.GOOGLE_CLIENT_SECRET
+    }
+    
+    
     return {
+        isProd: process.env.NODE_ENV === 'production',
         port: process.env.PORT,
         env: process.env.NODE_ENV,
         db: {
@@ -57,6 +74,8 @@ export const loader = () => {
             password: process.env.DB_PASSWORD,
             database: process.env.DB_NAME
         },
-        jwt: process.env.JWT_TOKEN
+        jwt: process.env.JWT_TOKEN,
+        sessionSecret: process.env.SESSION_SECRET,
+        ...({google})
     }
 }
