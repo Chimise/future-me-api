@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
+import { MiddlewareConsumer, Module, NestModule, forwardRef } from "@nestjs/common";
 import { TypeOrmModule, InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { JwtModule } from "@nestjs/jwt";
@@ -14,7 +14,7 @@ import { AuthService } from "./auth.service";
 import {Session} from './session.entity';
 
 @Module({
-    imports: [UserModule, ConfigModule, JwtModule.registerAsync({
+    imports: [forwardRef(() => UserModule), ConfigModule, JwtModule.registerAsync({
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: async (configService: ConfigService) => {

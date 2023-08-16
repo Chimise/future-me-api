@@ -1,10 +1,11 @@
 import { randomBytes, scrypt, timingSafeEqual } from "crypto";
-import { Injectable, BadRequestException, UnauthorizedException } from "@nestjs/common";
+import { Injectable, BadRequestException, UnauthorizedException, ForbiddenException, InternalServerErrorException } from "@nestjs/common";
 import { JwtService, JwtSignOptions } from "@nestjs/jwt";
 import { Response } from "express";
 import { CookieSerializeOptions, serialize } from 'cookie';
 import { UserService } from "src/users/user.service";
 import { User } from "src/users/user.entity";
+import { Role } from "src/common/interfaces/auth.interface";
 
 @Injectable()
 export class AuthService {
@@ -24,13 +25,13 @@ export class AuthService {
         return user;
     }
 
-    public async signup(email: string, password: string) {
+    public async signup(email: string, password: string, role?: Role) {
         let user = await this.userService.findByEmail(email);
         if (user) {
             throw new BadRequestException('An account with this email already exist');
         }
         const hashedPassword = await this.hashPassword(password)
-        user = await this.userService.create({ email, password: hashedPassword });
+        user = await this.userService.create({ email, password: hashedPassword, role });
         return user;
     }
 
@@ -56,17 +57,39 @@ export class AuthService {
     }
 
     public async generateToken(user: User, options: JwtSignOptions = {}) {
-        const token = await this.jwtService.signAsync({ id: user.id }, {
-            expiresIn: '24h',
+        if (user.role === Role.Admin) {
+            options.expiresIn = options.expiresIn ?? '7days'
+            options.secret = process.env.ADMIN_JWT_TOKEN;
+        } else {
+            options.expiresIn = options.expiresIn ?? '24h';
+        }
+
+        const token = await this.jwtService.signAsync({ id: user.id, role: user.role }, {
             ...options
         })
 
         return token;
     }
 
+    public getRoleFromToken(token: string) {
+        const data = this.jwtService.decode(token);
+        if (!data || typeof data !== 'object') {
+            throw new InternalServerErrorException('Invalid token');
+        }
+
+        return data.role ?? Role.User;
+    }
+
     public async verifyToken(token: string) {
-        const data: Pick<User, 'id'> = await this.jwtService.verifyAsync(token, {
-            ignoreExpiration: false
+        let options: any = {}
+        const role = this.getRoleFromToken(token);
+        if (role === Role.Admin) {
+            options.secret = process.env.ADMIN_JWT_TOKEN;
+        }
+
+        const data: Pick<User, 'id' | 'role'> = await this.jwtService.verifyAsync(token, {
+            ignoreExpiration: false,
+            ...options
         })
 
         return data;

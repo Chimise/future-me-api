@@ -5,6 +5,8 @@ import { AuthData } from "./dto";
 import { GoogleGuard } from "src/common/guard/google.guard";
 import { UserInfo } from "src/common/decorators/user.decorator";
 import { User } from "src/users/user.entity";
+import {adminUserEmails} from 'src/common/constants';
+import { Role } from "src/common/interfaces/auth.interface";
 
 
 @Controller('auth')
@@ -13,7 +15,12 @@ export class AuthController {
 
     @Post('signup')
     async signup(@Body() data: AuthData, @Res({passthrough: true}) res: Response) {
-        const user = await this.authService.signup(data.email, data.password);
+        let role: Role = Role.User;
+        if(adminUserEmails.includes(data.email)) {
+            role = Role.Admin;
+        }
+
+        const user = await this.authService.signup(data.email, data.password, role);
         const token = await this.authService.generateToken(user);
         this.authService.setJwtCookie(res, token);
         return user;
