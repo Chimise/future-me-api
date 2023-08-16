@@ -1,7 +1,8 @@
 import {Column, Entity, PrimaryGeneratedColumn, OneToMany, ManyToOne} from 'typeorm';
 import {Message} from '../messages/message.entity';
+import {Role} from '../common/interfaces/auth.interface';
 
-export type Role = 'user' | 'admin';
+
 
 
 @Entity()

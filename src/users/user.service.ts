@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Repository, FindManyOptions } from "typeorm";
 import { User } from "./user.entity";
 import { UserToken } from "./user.entity";
 
@@ -19,6 +19,10 @@ export class UserService {
     public findOne(id: string): Promise<User | null> {
         return this.userRepository.findOneBy({ id });
 
+    }
+
+    public findAll(options?: FindManyOptions<User>) : Promise<User[]> {
+        return this.userRepository.find(options);
     }
 
     public findOneBy(data: Partial<Omit<User, 'messages' | 'tokens' | 'toJSON'>>) {
