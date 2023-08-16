@@ -1,7 +1,7 @@
 import { IsEnum, IsNumber, IsInt, IsString, validateSync } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
-import { Environment, Google} from '../interfaces/index.interface';
-export {Config, Google} from '../interfaces/index.interface'
+import { Environment, Google} from '../interfaces/config.interface';
+export {Config, Google} from '../interfaces/config.interface'
 
 
 
@@ -29,7 +29,7 @@ class EnvironmentVariables {
     DB_NAME: string
 
     @IsString()
-    JWT_TOKEN: string
+    JWT_SECRET: string
 
     @IsString()
     SESSION_SECRET: string
@@ -74,7 +74,7 @@ export const loader = () => {
             password: process.env.DB_PASSWORD,
             database: process.env.DB_NAME
         },
-        jwt: process.env.JWT_TOKEN,
+        jwt: process.env.JWT_SECRET,
         sessionSecret: process.env.SESSION_SECRET,
         ...({google})
     }
