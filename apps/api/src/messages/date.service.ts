@@ -6,7 +6,6 @@ import * as moment from "moment-timezone";
 export class DateService {
     convertDateToUTC(date: string, timezone: string) {
         const curr = moment.tz(date, timezone);
-        console.log(moment.tz.guess(true))
         return curr.utc().format();
     }
 
@@ -15,7 +14,4 @@ export class DateService {
         return date.concat('T00:00:00.000Z');
     }
 
-    convertUTCToLocal() {
-        
-    }
 }

@@ -1,19 +1,6 @@
 import { IsEnum, IsString, ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments, Validate, IsOptional } from 'class-validator';
 import * as moment from 'moment-timezone';
-
-export enum MessageType {
-    Email = 'email',
-    Audio = 'audio',
-    Video = 'video'
-}
-
-export enum MessageStatus {
-    Waiting = 'waiting',
-    Scheduled = 'scheduled',
-    Sent = 'sent',
-    Failed = 'failed'
-}
-
+import { MessageStatus } from 'app/shared';
 
 
 @ValidatorConstraint({ name: 'IsValidDate', async: false })

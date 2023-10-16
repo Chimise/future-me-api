@@ -1,4 +1,4 @@
-import {IsString, IsEmail, MinLength} from 'class-validator'
+import { IsEmail, IsString, MinLength } from 'class-validator';
 
 export class UpdateProfileDto {
     @IsString()
@@ -13,7 +13,7 @@ export class UpdateProfileDto {
 }
 
 export class UpdatePasswordDto {
-    @MinLength(5, {message: 'Password should be at least five characters'})
+    @MinLength(5, { message: 'Password should be at least five characters' })
     @IsString()
     password: string;
 }

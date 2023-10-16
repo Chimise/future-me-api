@@ -1,13 +1,13 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { PassportStrategy } from "@nestjs/passport";
 import { ConfigService } from "@nestjs/config";
-import { Strategy } from 'passport-google-oidc';
-import { Profile, } from "passport";
-import { Request } from "express";
 import { JwtService } from "@nestjs/jwt";
+import { PassportStrategy } from "@nestjs/passport";
 import { parse } from 'cookie';
-import { UserService } from "../../users/user.service";
+import { Request } from "express";
+import { Profile, } from "passport";
+import { Strategy } from 'passport-google-oidc';
 import { User } from "../../users/user.entity";
+import { UserService } from "../../users/user.service";
 
 
 @Injectable()
@@ -42,7 +42,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
         const existingGoogleUser = await this.userService.findOneBy({ google_id: profile.id });
 
         // If a google user already exist return it
-        if(existingGoogleUser) return existingGoogleUser;
+        if (existingGoogleUser) return existingGoogleUser;
 
         if (user) {
             // The user signed in using email and password, add a google account to the user account
@@ -51,7 +51,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
             const email = user.email || profile.emails[0].value;
 
             // Will later save access-token if needed
-            return this.userService.update(user, { email, google_id: profile.id, profile_image, name })
+            return await this.userService.update(user, { email, google_id: profile.id, profile_image, name })
         }
 
         const userWithSimilarEmail = await this.userService.findByEmail(profile.emails[0].value);
