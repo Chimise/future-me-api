@@ -1,29 +1,29 @@
-import { IsEnum, IsString, ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments, Validate, IsOptional } from 'class-validator';
-import * as moment from 'moment-timezone';
 import { MessageStatus } from 'app/shared';
+import { IsEnum, IsOptional, IsString, Validate, ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
+import * as moment from 'moment-timezone';
 
 
 @ValidatorConstraint({ name: 'IsValidDate', async: false })
 export class IsValidDate implements ValidatorConstraintInterface {
     validate(value: string, validationArguments?: ValidationArguments | undefined): boolean | Promise<boolean> {
-        if(!value) {
+        if (!value) {
             return false;
         }
         return moment(value, 'YYYY-MM-DD', true).isValid();
     }
 
     defaultMessage(validationArguments?: ValidationArguments | undefined): string {
-        if(!validationArguments?.value) {
+        if (!validationArguments?.value) {
             return `Property ${validationArguments?.property} is required`;
         }
         return `Date ${validationArguments?.value} is invalid, check and try again`;
     }
 }
 
-@ValidatorConstraint({name: 'IsTimezone'})
+@ValidatorConstraint({ name: 'IsTimezone' })
 export class IsTimeZone implements ValidatorConstraintInterface {
     validate(value: any, validationArguments?: ValidationArguments | undefined): boolean | Promise<boolean> {
-        if(!value || typeof value !== 'string') {
+        if (!value || typeof value !== 'string') {
             return false;
         }
         const zone = moment.tz.names().find(name => name.toLowerCase() === value.toLowerCase());
@@ -31,7 +31,7 @@ export class IsTimeZone implements ValidatorConstraintInterface {
     }
 
     defaultMessage(validationArguments?: ValidationArguments | undefined): string {
-        if(!validationArguments?.value) {
+        if (!validationArguments?.value) {
             return `Property ${validationArguments?.property} is required`;
         }
 
@@ -45,10 +45,6 @@ export class CreateMessageDto {
 
     @Validate(IsTimeZone)
     timezone: string;
-
-    @IsOptional()
-    @IsEnum(MessageStatus)
-    type?: MessageStatus;
 
     @IsString()
     content: string;

@@ -1,17 +1,36 @@
-import { Injectable } from "@nestjs/common";
-import { MailerService } from "@nestjs-modules/mailer";
+import { Injectable, InternalServerErrorException } from "@nestjs/common";
+import axios from 'axios';
 
 @Injectable()
 export class EmailService {
-    constructor(private mailerService: MailerService) {
-
+    private config = {
+        sender: {
+            name: process.env?.APP_NAME || 'Future Me',
+            email: 'noreply@futureme.com',
+        }
     }
 
-    send(email: string, subject: string, content: string) {
-        return this.mailerService.sendMail({
-            html: content,
-            to: email,
-            subject
+
+    async send(email: string, subject: string, content: string) {
+        const response = await axios.post('https://api.brevo.com/v3/smtp/email', {
+            ...this.config,
+            to: [{ email, name: 'Test User' }],
+            subject,
+            htmlContent: content,
+            textContent: content
+        }, {
+            headers: {
+                'api-key': process.env.SIB_API_KEY,
+                Accept: 'application/json',
+            }
         })
+
+        if (!response.data || (response.data && response.data?.event === 'delivered')) {
+            console.log(response.data);
+            throw new InternalServerErrorException('Message was sent but was not delivered successfully');
+        }
+
+        return response.data;
+
     }
 }

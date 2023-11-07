@@ -4,11 +4,12 @@ import { Queue } from 'bull';
 import * as moment from 'moment';
 import { DataSource, EntitySubscriberInterface, EventSubscriber, InsertEvent } from "typeorm";
 import { Message } from "./message.entity";
-import { MessageService } from './message.service';
 
 @EventSubscriber()
 export class MessageSubscriber implements EntitySubscriberInterface<Message> {
-    constructor(dataSource: DataSource, @InjectQueue('message') private readonly messageQueue: Queue<Message>, private readonly messageService: MessageService) {
+    private dataSource: DataSource;
+    constructor(dataSource: DataSource, @InjectQueue('message') private readonly messageQueue: Queue<Message>,) {
+        this.dataSource = dataSource;
         dataSource.subscribers.push(this);
     }
 
@@ -16,15 +17,19 @@ export class MessageSubscriber implements EntitySubscriberInterface<Message> {
         return Message;
     }
 
-    async afterInsert(event: InsertEvent<Message>): void | Promise<any> {
+    async afterInsert(event: InsertEvent<Message>): Promise<any> {
         const currentDate = moment.utc().format('YYYY-MM-DD');
+        console.log('Current date', currentDate);
         const scheduledDate = moment.utc(event.entity.scheduled_date_utc).format('YYYY-MM-DD');
+        console.log('Scheduled date', scheduledDate);
         if (currentDate !== scheduledDate) {
             return;
         }
 
-        const message = await this.messageService.update(event.entity.id, { status: MessageStatus.Scheduled });
-        this.messageQueue.add('sendMessage', message);
+        console.log(event.entity);
+        await this.dataSource.createQueryBuilder().update(Message).set({ status: MessageStatus.Scheduled }).where('id = :id', { id: event.entity.id })
+        console.log('Adding to queue');
+        this.messageQueue.add('sendMessage', { ...event.entity, status: MessageStatus.Scheduled });
     }
 }
 

@@ -1,15 +1,15 @@
-import { Controller, Get, UseGuards, Post, Body } from "@nestjs/common";
-import { JwtGuard } from "../common/guard/jwt.guard";
+import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
 import { UserInfo } from "../common/decorators/user.decorator";
+import { JwtGuard } from "../common/guard/jwt.guard";
 import { User } from "../users/user.entity";
-import { UpdatePasswordDto, UpdateProfileDto } from "./dto/account.dto";
 import { AccountService } from "./account.service";
+import { UpdatePasswordDto, UpdateProfileDto } from "./dto/account.dto";
 
 
 @UseGuards(JwtGuard)
 @Controller('account')
 export class AccountController {
-    constructor(private accountService: AccountService) {}
+    constructor(private accountService: AccountService) { }
 
     @Get('profile')
     getProfile(@UserInfo() user: User) {

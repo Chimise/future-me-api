@@ -4,14 +4,28 @@ import * as moment from "moment-timezone";
 
 @Injectable()
 export class DateService {
-    convertDateToUTC(date: string, timezone: string) {
-        const curr = moment.tz(date, timezone);
-        return curr.utc().format();
+    convertDateToUTC(scheduledDate: string, timezone: string) {
+        const dateInUserTz = moment.utc().tz(timezone);
+        const date = moment(this.convertToTimestamp(scheduledDate));
+        date.set({
+            milliseconds: dateInUserTz.get('milliseconds'),
+            minutes: dateInUserTz.get('minutes'),
+            seconds: dateInUserTz.get('seconds'),
+            hours: dateInUserTz.get('hours')
+        })
+
+        return date.toISOString();
     }
 
     convertToTimestamp(date: string) {
-        console.log(process.env.TZ);
         return date.concat('T00:00:00.000Z');
+    }
+
+    isDateOutdated(timeStamp: string) {
+        const currentDate = moment.utc();
+        const scheduledDate = moment.utc(timeStamp);
+        const diff = scheduledDate.diff(currentDate, 'days', true);
+        return diff <= -1;
     }
 
 }

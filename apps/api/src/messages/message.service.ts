@@ -28,12 +28,12 @@ export class MessageService {
     async update(id: MessageOrId, data: Update<Message, 'status' | 'type'>) {
         const message = await this.getMessage(id);
         Object.assign(message, data);
-        return this.messageRepository.save(message);
+        return await this.messageRepository.save(message);
     }
 
     async delete(id: MessageOrId) {
         const message = await this.getMessage(id);
-        return this.messageRepository.remove(message);
+        return await this.messageRepository.remove(message);
     }
 
     private async getMessage(id: MessageOrId) {
@@ -41,6 +41,6 @@ export class MessageService {
             return id;
         }
 
-        return await this.findOne('id');
+        return await this.findOne(id);
     }
 }

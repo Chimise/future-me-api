@@ -1,8 +1,7 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository, FindManyOptions } from "typeorm";
-import { User } from "./user.entity";
-import { UserToken } from "./user.entity";
+import { FindManyOptions, Repository } from "typeorm";
+import { User, UserToken } from "./user.entity";
 
 type UserOrId = User | string;
 
@@ -21,7 +20,7 @@ export class UserService {
 
     }
 
-    public findAll(options?: FindManyOptions<User>) : Promise<User[]> {
+    public findAll(options?: FindManyOptions<User>): Promise<User[]> {
         return this.userRepository.find(options);
     }
 
@@ -36,12 +35,12 @@ export class UserService {
     public async update(id: UserOrId, userAttr: Partial<User>) {
         const user = await this.getUser(id);
         Object.assign(user, userAttr);
-        return this.userRepository.save(user);
+        return await this.userRepository.save(user);
     }
 
     public async delete(id: UserOrId) {
         const user = await this.getUser(id);
-        return this.userRepository.remove(user);
+        return await this.userRepository.remove(user);
     }
 
     public async saveToken(id: UserOrId, kind: string, token: string) {
@@ -49,7 +48,7 @@ export class UserService {
         const userToken = await this.userTokenRepository.create();
         Object.assign(userToken, { kind, access_token: token, user: user.id });
 
-        return this.userTokenRepository.save(userToken);
+        return await this.userTokenRepository.save(userToken);
     }
 
     private async getUser(user: UserOrId): Promise<User> {

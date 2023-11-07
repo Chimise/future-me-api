@@ -5,7 +5,7 @@ import { Job } from "bull";
 export class MessageProcessor {
     @Process('sendMessage')
     handleSendMessage(job: Job) {
+        console.log('Job Running');
         console.log(job.data);
-
     }
 }
